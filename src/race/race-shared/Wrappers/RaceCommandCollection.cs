@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace SSC.Shared.Wrappers
 {
@@ -134,7 +134,16 @@ namespace SSC.Shared.Wrappers
 
         public void InvokeFailed(string reason)
         {
-            OnCommandFailed.DynamicInvoke(new[] { reason });
+            StringBuilder usageBuilder = new StringBuilder();
+
+            usageBuilder.Append($"/{BaseCommand} {SubCommand}");
+
+            foreach (var paramKvp in Parameters)
+            {
+                usageBuilder.Append($" <{paramKvp.Value.Name}>");
+            }
+
+            OnCommandFailed.DynamicInvoke(new[] { reason, usageBuilder.ToString() });
         }
     }
 
@@ -173,6 +182,7 @@ namespace SSC.Shared.Wrappers
 
             RaceCommandDefinition currentDefinition = null;
 
+            //Lookup the definition from all the definitions we have registered.
             foreach (RaceCommandDefinition def in commandDefinitions)
             {
                 if (string.Compare(baseCommand, def.BaseCommand, true) == 0 &&
@@ -183,59 +193,44 @@ namespace SSC.Shared.Wrappers
                 }
             }
 
-            if (currentDefinition != null)
+            if (currentDefinition == null)
             {
-                bool isValid = true;
-                string paramName = "";
-                List<object> paramList = new List<object>();
-                int paramCount = 1;
+                return;
+            }
 
-                if (currentDefinition.Parameters.Count > args.Count)
+            List<object> paramList = new List<object>();
+
+            if (currentDefinition.Parameters.Count != (args.Count - 1))
+            {
+                currentDefinition.InvokeFailed($"Mismatch parameter(s), expected: {currentDefinition.Parameters.Count} param(s), got: {args.Count - 1} param(s)");
+                return;
+            }
+
+            int paramCounter = 1;
+            foreach (var paramKvp in currentDefinition.Parameters)
+            {
+                var paramName = paramKvp.Key;
+                var param = paramKvp.Value;
+                var arg = args[paramCounter];
+
+                //Add player source.
+                if (string.Compare("player", param.Name) == 0)
                 {
-                    //TODO: Move this to RaceCommandDefinition.
-                    currentDefinition.OnCommandFailed.DynamicInvoke(new[] {
-                        $"Parameter count doesn't match, expected {currentDefinition.Parameters.Count} params , got {args.Count} params."
-                    });
-
-                    return;
+                    paramList.Add(source);
                 }
-
-                string paramInvalidReason = "";
-
-                foreach (var paramKvp in currentDefinition.Parameters)
+                else if (param.IsParamValid(arg, out string paramInvalidReason))
                 {
-                    paramName = paramKvp.Key;
-                    var param = paramKvp.Value;
-                    var arg = args[paramCount];
-
-                    //Add player source.
-                    if (string.Compare("player", param.Name) == 0)
-                    {
-                        paramList.Add(source);
-                    }
-                    //Else we copy over any of the args we got passed.
-                    else if (param.IsParamValid(arg, out paramInvalidReason))
-                    {
-                        paramList.Add(arg);
-                        paramCount++;
-                    }
-
-                    else
-                    {
-                        isValid = false;
-                        break;
-                    }
-                }
-
-                if (!isValid)
-                {
-                    currentDefinition.InvokeFailed(paramInvalidReason); 
+                    paramList.Add(arg);
+                    paramCounter++;
                 }
                 else
                 {
-                    currentDefinition.InvokeSuccess(paramList.ToArray());
+                    currentDefinition.InvokeFailed(paramInvalidReason); 
+                    break;
                 }
             }
+
+            currentDefinition.InvokeSuccess(paramList.ToArray());
         }
     }
 }

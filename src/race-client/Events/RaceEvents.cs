@@ -9,7 +9,7 @@ namespace SSC.Client.Events
     {
         public RaceEvents()
         {
-            RaceEventCollection ev = RaceClient.Instance.EventCollection;
+            RaceEventCollection ev = RaceClient.Instance.Events;
 
             ev.RegisterEvent<EventClientRaceAnnounced>(OnRaceAnnounced);
         }

@@ -1,168 +1,207 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
-using CitizenFX.Core;
-using static CitizenFX.Core.Native.API;
+﻿using CitizenFX.Core;
 
 using SSC.Shared.Wrappers;
 
-using SSC.Client.Race;
-using SSC.Client.Util;
 using SSC.Client.Events;
 using SSC.Client.Commands;
+using SSC.Client.States;
+using SSC.Client.Worker;
+
+using static CitizenFX.Core.Native.API;
+using System.Threading.Tasks;
 
 namespace SSC.Client
 {
     public class RaceClient : BaseScript
     {
         public static RaceClient Instance { get; private set; }
-        public RaceEventCollection EventCollection { get; private set; }
-        public RaceCommandCollection CommandCollection { get; private set; }
-
-        private Race.Race CurrentRace;
-        private bool IsInCreator = false;
+        public RaceEventCollection Events { get; private set; }
+        public RaceCommandCollection Commands { get; private set; }
+        public RaceStateCollection States { get; private set; }
+        public RaceWorkerCollection Workers { get; private set; }
 
         public RaceClient()
         {
             Instance = this;
 
-            CommandCollection = new RaceCommandCollection(
+            States = new RaceStateCollection();
+            States.SetState(new CommonState());
+            States.SetState(new CreatorState());
+            States.SetState(new DevToolboxState());
+
+            Commands = new RaceCommandCollection(
                 (name, callback, restricted) => { RegisterCommand(name, callback, restricted); }
             );
 
             new CreatorCommands();
+            new DevToolboxCommands();
 
-            EventCollection = new RaceEventCollection(
+            Events = new RaceEventCollection(
                 EventHandlers.Add, TriggerEvent, TriggerServerEvent    
             );
 
             new NotificationEvents();
             new RaceEvents();
 
+            Workers = new RaceWorkerCollection(
+                (task) => Tick += task,
+                (time) => Delay(time)
+            );
+
+            Workers.PushWorker(new DevToolboxWorker());
         }
 
+        bool spawned = false;
 
-        [Tick]
-        private async Task OnClientUpdate()
+       // [Tick]
+        private async Task Test()
         {
-            if (CurrentRace == null)
+            if (spawned == true)
             {
-                await Task.FromResult(0);
                 return;
             }
 
-            if (IsInCreator)
+            Model vehModel = new Model("sc1");
+            bool modelLoaded = await vehModel.Request(1000);
+
+            if (!modelLoaded)
             {
-                await CurrentRace.CreatorUpdate();
+                Debug.WriteLine("1");
+                return;
             }
-            else
-            {
-            }
-            await Task.FromResult(0);
+
+            Player player = new Player(PlayerId());
+            Vector3 vehPosition = player.Character.Position;
+            float vehHeading = player.Character.Heading;
+
+            Vehicle vehToSpawn = await World.CreateVehicle(vehModel, vehPosition, vehHeading);
+            Debug.WriteLine(vehToSpawn.Handle.ToString());
+            player.Character.SetIntoVehicle(vehToSpawn, VehicleSeat.Driver);
+
+            Debug.WriteLine("2");
+            spawned = true;
         }
 
-        [Command("rc_create")]
-        public void CommandCreateRace(int source, List<object> args, string raw)
-        {
-            if (CurrentRace != null)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Race is already created!", 255, 0, 0);
-                return;
-            }
+        //[Tick]
+        //private async Task OnClientUpdate()
+        //{
+        //    if (CurrentRace == null)
+        //    {
+        //        await Task.FromResult(0);
+        //        return;
+        //    }
 
-            if (args.Count < 1)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Please specify a track name.", 255, 0, 0);
-                return;
-            }
+        //    if (IsInCreator)
+        //    {
+        //        await CurrentRace.CreatorUpdate();
+        //    }
+        //    else
+        //    {
+        //    }
+        //    await Task.FromResult(0);
+        //}
 
-            string raceName = (string)args[0];
+        //[Command("rc_create")]
+        //public void CommandCreateRace(int source, List<object> args, string raw)
+        //{
+        //    if (CurrentRace != null)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Race is already created!", 255, 0, 0);
+        //        return;
+        //    }
 
-            CurrentRace = new Race.Race(raceName, true);
-            ChatHelper.SendMessage(nameof(RaceClient), "A new race has been created!", 0, 255, 0);
-        }
+        //    if (args.Count < 1)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Please specify a track name.", 255, 0, 0);
+        //        return;
+        //    }
 
-        [Command("rc_cp")]
-        public void CommandAddCheckpoint()
-        {
-            if (CurrentRace == null)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Cannot add checkpoint if race doesn't exist.", 255, 0, 0);
-                return;
-            }
+        //    string raceName = (string)args[0];
 
-            Vector3 position = LocalPlayer.Character.Position;
-            CurrentRace.AddCheckpoint(new RaceCheckpoint(position));
-        }
+        //    CurrentRace = new Race.Race(raceName, true);
+        //    ChatHelper.SendMessage(nameof(RaceClient), "A new race has been created!", 0, 255, 0);
+        //}
 
-        [Command("rc_sp")]
-        public void CommandAddStartPoint()
-        {
-            if (CurrentRace == null)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Cannot add start if race doesn't exist.", 255, 0, 0);
-                return;
-            }
+        //[Command("rc_cp")]
+        //public void CommandAddCheckpoint()
+        //{
+        //    if (CurrentRace == null)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Cannot add checkpoint if race doesn't exist.", 255, 0, 0);
+        //        return;
+        //    }
 
-            Vector3 position = LocalPlayer.Character.Position;
-            float heading = LocalPlayer.Character.Heading;
+        //    Vector3 position = LocalPlayer.Character.Position;
+        //    CurrentRace.AddCheckpoint(new RaceCheckpoint(position));
+        //}
 
-            CurrentRace.AddStart(new RaceStart(position, heading));
-        }
+        //[Command("rc_sp")]
+        //public void CommandAddStartPoint()
+        //{
+        //    if (CurrentRace == null)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Cannot add start if race doesn't exist.", 255, 0, 0);
+        //        return;
+        //    }
 
-        [Command("rc_save")]
-        public void CommandSaveRace()
-        {
-            if (CurrentRace == null)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Cannot save track if race hasn't been created.", 255, 0, 0);
-                return;
-            }
+        //    Vector3 position = LocalPlayer.Character.Position;
+        //    float heading = LocalPlayer.Character.Heading;
 
-            CurrentRace.Save();
-        }
+        //    CurrentRace.AddStart(new RaceStart(position, heading));
+        //}
 
-        [Command("rc_clear")]
-        public void CommandClearRace()
-        {
-            CurrentRace = null;
-        }
+        //[Command("rc_save")]
+        //public void CommandSaveRace()
+        //{
+        //    if (CurrentRace == null)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Cannot save track if race hasn't been created.", 255, 0, 0);
+        //        return;
+        //    }
 
-        [Command("host")]
-        public void CommandHostRace(int source, List<object> args, string raw)
-        {
-            if (args.Count < 3)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Error, missing parameters, example: /race <track> <car> <laps>", 255, 0, 0);
-                return;
-            }
+        //    CurrentRace.Save();
+        //}
 
-            string track = (string)args[0];
-            string car = (string)args[1];
-            int laps = int.Parse(args[2].ToString());
+        //[Command("rc_clear")]
+        //public void CommandClearRace()
+        //{
+        //    CurrentRace = null;
+        //}
 
-            TriggerServerEvent("ssc-racing::race::RaceHosted", track, car, laps);
-        }
+        //[Command("host")]
+        //public void CommandHostRace(int source, List<object> args, string raw)
+        //{
+        //    if (args.Count < 3)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Error, missing parameters, example: /race <track> <car> <laps>", 255, 0, 0);
+        //        return;
+        //    }
 
-        [Command("join")]
-        public void CommandJoinRace(int source, List<object> args, string raw)
-        {
-            if (args.Count < 1)
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Error, missing parameters, example: /join <id>", 255, 0, 0);
-                return;
-            }
+        //    string track = (string)args[0];
+        //    string car = (string)args[1];
+        //    int laps = int.Parse(args[2].ToString());
 
-            string code = (string)args[0];
+        //    TriggerServerEvent("ssc-racing::race::RaceHosted", track, car, laps);
+        //}
 
-            if (string.IsNullOrEmpty(code))
-            {
-                ChatHelper.SendMessage(nameof(RaceClient), "Error, the join code is invalid!", 255, 0, 0);
-                return;
-            }
+        //[Command("join")]
+        //public void CommandJoinRace(int source, List<object> args, string raw)
+        //{
+        //    if (args.Count < 1)
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Error, missing parameters, example: /join <id>", 255, 0, 0);
+        //        return;
+        //    }
 
-            TriggerServerEvent("ssc-racing::race::RaceJoin", code);
-        }
+        //    string code = (string)args[0];
+
+        //    if (string.IsNullOrEmpty(code))
+        //    {
+        //        ChatHelper.SendMessage(nameof(RaceClient), "Error, the join code is invalid!", 255, 0, 0);
+        //        return;
+        //    }
+
+        //    TriggerServerEvent("ssc-racing::race::RaceJoin", code);
+        //}
     }
 }

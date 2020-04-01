@@ -53,17 +53,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\DevToolboxCommands.cs" />
     <Compile Include="Commands\CreatorCommands.cs" />
     <Compile Include="Events\NotificationEvents.cs" />
     <Compile Include="Events\RaceEvents.cs" />
+    <Compile Include="States\DevToolboxState.cs" />
+    <Compile Include="States\CommonState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaceClient.cs" />
     <Compile Include="Race\Race.cs" />
     <Compile Include="Race\RaceCheckpoint.cs" />
     <Compile Include="Race\Racer.cs" />
     <Compile Include="Race\RaceStart.cs" />
+    <Compile Include="States\CreatorState.cs" />
     <Compile Include="Util\ChatHelper.cs" />
     <Compile Include="Util\GroundHelper.cs" />
+    <Compile Include="Worker\DevToolboxWorker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -74,5 +79,6 @@
       <Name>race-shared</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
