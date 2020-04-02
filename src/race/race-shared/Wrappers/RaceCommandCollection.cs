@@ -129,11 +129,19 @@ namespace SSC.Shared.Wrappers
 
         public void InvokeSuccess(object[] invokeParams)
         {
-            OnCommandSuccess.DynamicInvoke(invokeParams);
+            try
+            {
+                OnCommandSuccess.DynamicInvoke(invokeParams);
+            }
+            catch (Exception e)
+            {
+                InvokeFailed($"Callback Exception: {e.Message} - {e.StackTrace}");
+            }
         }
 
         public void InvokeFailed(string reason)
         {
+            //TODO(bma): Cache the usage string.
             StringBuilder usageBuilder = new StringBuilder();
 
             usageBuilder.Append($"/{BaseCommand} {SubCommand}");
@@ -174,7 +182,8 @@ namespace SSC.Shared.Wrappers
 
             if (args.Count < 1)
             {
-                //Show base command usage.
+                //TODO(bma): Enumerate sub commands usage when the base command is invoked.
+                //           This might be a good time to add an function for command usage and caching this.
                 return;
             }
 
@@ -195,6 +204,8 @@ namespace SSC.Shared.Wrappers
 
             if (currentDefinition == null)
             {
+                //TODO(bma): Notify the user that something happened.
+                //           If this happens in general, it's really bad.
                 return;
             }
 
