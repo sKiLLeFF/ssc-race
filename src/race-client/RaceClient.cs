@@ -8,7 +8,6 @@ using SSC.Client.States;
 using SSC.Client.Worker;
 
 using static CitizenFX.Core.Native.API;
-using System.Threading.Tasks;
 
 namespace SSC.Client
 {
@@ -22,6 +21,7 @@ namespace SSC.Client
 
         public RaceClient()
         {
+            Debug.WriteLine($"[{GetHashCode()}] Race Client has started");
             Instance = this;
 
             States = new RaceStateCollection();
@@ -51,36 +51,6 @@ namespace SSC.Client
             Workers.PushWorker(new DevToolboxWorker());
         }
 
-        bool spawned = false;
-
-       // [Tick]
-        private async Task Test()
-        {
-            if (spawned == true)
-            {
-                return;
-            }
-
-            Model vehModel = new Model("sc1");
-            bool modelLoaded = await vehModel.Request(1000);
-
-            if (!modelLoaded)
-            {
-                Debug.WriteLine("1");
-                return;
-            }
-
-            Player player = new Player(PlayerId());
-            Vector3 vehPosition = player.Character.Position;
-            float vehHeading = player.Character.Heading;
-
-            Vehicle vehToSpawn = await World.CreateVehicle(vehModel, vehPosition, vehHeading);
-            Debug.WriteLine(vehToSpawn.Handle.ToString());
-            player.Character.SetIntoVehicle(vehToSpawn, VehicleSeat.Driver);
-
-            Debug.WriteLine("2");
-            spawned = true;
-        }
 
         //[Tick]
         //private async Task OnClientUpdate()
