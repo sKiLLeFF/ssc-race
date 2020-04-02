@@ -26,7 +26,7 @@ namespace SSC.Shared.Util
 
         public void Set(T value)
         {
-            if (Value.Equals(value))
+            if (Value != null && Value.Equals(value))
                 return;
 
             Value = value;
