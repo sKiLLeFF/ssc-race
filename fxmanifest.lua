@@ -6,6 +6,6 @@ description "A racing gamemode framework for sandysandwiches.club community game
 version "1.0.0-ALPHA"
 
 files { "Newtonsoft.Json.dll" }
-shared_scripts { "**/*.Shared.net.dll" }
-client_scripts { "**/*.Client.net.dll" }
-server_scripts { "**/*.Server.net.dll" }
+shared_scripts { "*.Shared.net.dll" }
+client_scripts { "*.Client.net.dll" }
+server_scripts { "*.Server.net.dll" }
