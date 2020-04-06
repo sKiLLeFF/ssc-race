@@ -8,6 +8,12 @@ namespace SSC.Shared.Util
         private T Value = default;
         private HashSet<Action<T>> Observers;
 
+        public Observable()
+        {
+            Observers = new HashSet<Action<T>>();
+            Value = default;
+        }
+
         public Observable(T defaultValue)
         {
             Observers = new HashSet<Action<T>>();
@@ -24,9 +30,11 @@ namespace SSC.Shared.Util
             return Value;
         }
 
-        public void Set(T value)
+        //NOTE(bma) isSimian is to avoid tripping broken equality checks. (Player.Equals(..) namely_
+        //          This will make the observable update everytime you assign a value when this is true.
+        public void Set(T value, bool isSimian = false) 
         {
-            if (Value != null && Value.Equals(value))
+            if (!isSimian && Value != null && Value.Equals(value))
                 return;
 
             Value = value;

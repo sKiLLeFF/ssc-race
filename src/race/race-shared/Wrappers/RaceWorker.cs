@@ -14,6 +14,7 @@ namespace SSC.Shared.Wrappers
             GameTasks = new Queue<Action>();
         }
 
+        public virtual void OnWorkerInitialized() { }
         public virtual Task OnRefreshState()    => Task.FromResult(0);
         public virtual Task OnGameLogicTick()   => Task.FromResult(0);
         public virtual Task OnGameRenderTick()  => Task.FromResult(0);

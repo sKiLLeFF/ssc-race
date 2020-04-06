@@ -40,6 +40,8 @@ namespace SSC.Shared.Wrappers
                 worker.ProcessGameTasks();
                 return DelayProxy.Invoke(100);
             });
+
+            worker.OnWorkerInitialized();
         }
     }
 }

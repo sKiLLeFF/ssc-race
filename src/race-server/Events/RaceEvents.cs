@@ -19,7 +19,7 @@ namespace SSC.Server
 
         public RaceEvents()
         {
-            RaceEventCollection ev = RaceServer.Instance.EventCollection;
+            RaceEventCollection ev = RaceServer.Instance.Events;
 
             ev.RegisterEvent<EventServerRaceHosted<Player>>(OnRaceHosted);
             ev.RegisterEvent<EventServerRaceJoined<Player>>(OnRaceJoined);

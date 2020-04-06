@@ -48,9 +48,10 @@ namespace SSC.Client
                 (time) => Delay(time)
             );
 
+            Workers.PushWorker(new CommonWorker());
             Workers.PushWorker(new DevToolboxWorker());
+            Workers.PushWorker(new CreatorWorker());
         }
-
 
         //[Tick]
         //private async Task OnClientUpdate()

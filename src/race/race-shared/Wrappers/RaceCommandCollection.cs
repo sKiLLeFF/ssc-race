@@ -11,6 +11,7 @@ namespace SSC.Shared.Wrappers
     {
         public int Min;
         public int Max;
+        //Regex, but it's broken.
     }
 
     public struct RaceCommandParam
@@ -178,6 +179,7 @@ namespace SSC.Shared.Wrappers
 
         private void ProcessCommandInvoke(int source, List<object> args, string raw)
         {
+
             string baseCommand = raw.Split(' ')[0].Replace("/", "");
 
             if (args.Count < 1)
@@ -201,6 +203,7 @@ namespace SSC.Shared.Wrappers
                     break;
                 }
             }
+
 
             if (currentDefinition == null)
             {

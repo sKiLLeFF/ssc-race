@@ -68,6 +68,8 @@
     <Compile Include="States\CreatorState.cs" />
     <Compile Include="Util\ChatHelper.cs" />
     <Compile Include="Util\GroundHelper.cs" />
+    <Compile Include="Worker\CommonWorker.cs" />
+    <Compile Include="Worker\CreatorWorker.cs" />
     <Compile Include="Worker\DevToolboxWorker.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +81,8 @@
       <Name>race-shared</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Static\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

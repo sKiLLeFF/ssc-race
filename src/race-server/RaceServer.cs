@@ -13,9 +13,10 @@ namespace SSC.Server
     public class RaceServer : BaseScript
     {
         public static RaceServer Instance { get; private set; }
-        public RaceEventCollection EventCollection { get; private set; }
+        public RaceEventCollection Events { get; private set; }
 
         private RaceEvents raceEvents;
+        private ChatEvents chatEvents;
 
         //private readonly RaceCollection RaceCollection = new RaceCollection();
 
@@ -23,11 +24,13 @@ namespace SSC.Server
         {
             Instance = this;
 
-            EventCollection = new RaceEventCollection(
+            Events = new RaceEventCollection(
                 EventHandlers.Add, TriggerEvent, TriggerClientEvent
             );
-         
+
+            chatEvents = new ChatEvents();
             raceEvents = new RaceEvents();
+
         }
 
         //public void SaveTrack(string name, string json)

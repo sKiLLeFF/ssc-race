@@ -1,7 +1,13 @@
-﻿namespace SSC.Client.States
+﻿using SSC.Shared.Util;
+
+namespace SSC.Client.States
 {
     public class CreatorState
     {
-        public bool DoPlaceCheckpoint = false;
+        public Observable<bool> PlaceCheckpoint = new Observable<bool>(false);
+
+        public bool ZFix = true;
+        public bool OptionPreview = true;
+
     }
 }

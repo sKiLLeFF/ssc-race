@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\ChatEvents.cs" />
     <Compile Include="Events\RaceEvents.cs" />
     <Compile Include="RaceCollection.cs" />
     <Compile Include="RaceInstance.cs" />

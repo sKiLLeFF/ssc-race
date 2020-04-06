@@ -26,6 +26,11 @@ namespace SSC.Shared.Wrappers
             registerProxy?.Invoke(eventName, delegateInstance);
         }
 
+        public void RegisterRawEvent(string eventName, Delegate delegateInstance)
+        {
+            registerProxy?.Invoke(eventName, delegateInstance);
+        }
+
         public void InvokeEvent<T>(bool isRemote, params object[] args) where T : Delegate
         {
             string eventName = StringUtil.GetEventName<T>();

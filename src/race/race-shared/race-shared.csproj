@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Static\RaceStatic.cs" />
+    <Compile Include="Util\Mathman.cs" />
     <Compile Include="Util\Observable.cs" />
     <Compile Include="Util\StringUtil.cs" />
     <Compile Include="Wrappers\RaceCommandCollection.cs" />
