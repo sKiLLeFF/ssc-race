@@ -221,6 +221,7 @@ namespace SSC.Shared.Wrappers
             }
 
             int paramCounter = 1;
+            bool wasOneOfTheParamInvalid = false;
             foreach (var paramKvp in currentDefinition.Parameters)
             {
                 var paramName = paramKvp.Key;
@@ -239,12 +240,16 @@ namespace SSC.Shared.Wrappers
                 }
                 else
                 {
-                    currentDefinition.InvokeFailed(paramInvalidReason); 
+                    currentDefinition.InvokeFailed(paramInvalidReason);
+                    wasOneOfTheParamInvalid = true;
                     break;
                 }
             }
 
-            currentDefinition.InvokeSuccess(paramList.ToArray());
+            if (!wasOneOfTheParamInvalid)
+            {
+                currentDefinition.InvokeSuccess(paramList.ToArray());
+            }
         }
     }
 }
