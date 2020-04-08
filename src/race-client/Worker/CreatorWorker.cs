@@ -54,7 +54,7 @@ namespace SSC.Client.Worker
             // Player is not known yet.
             if (commonState.LocalPlayer.Get().Handle < 0) return Task.FromResult(0);
 
-            //Check controls if we are in checkpoint edit mode.
+            //Check controls to edit checkpoints, if we are in checkpoint edit mode.
             if (checkpointState > 0)
             {
                 OnCheckpointPlacementControls();
@@ -96,8 +96,14 @@ namespace SSC.Client.Worker
             //86 -> E, L3
             else if (IsControlJustPressed(0, 86))
             {
+
                 checkpointState = Mathman.Clamp(--checkpointState, 0, checkpointMaxStates);
                 OnCheckpointStateChange();
+
+                if (checkpointState == 0)
+                {
+                    OnCheckpointPlacementReset();
+                }
             }
         }
 
@@ -236,9 +242,10 @@ namespace SSC.Client.Worker
             return Task.FromResult(0);
         }
 
-        private Task OnCheckpointPlacementCommit()
+        private Task OnCheckpointPlacementReset()
         {
-            //TODO(bma): Store the checkpoint data somewhere.
+            ChatHelper.SendMessage("Creator", "Resetting checkpoint edit mode", 255, 120, 0);
+
             checkpointState = 0;
             checkpointLastPosition = Vector3.Zero;
             checkpointOffset = Vector3.Zero;
@@ -246,6 +253,15 @@ namespace SSC.Client.Worker
             checkpointSize = 1.0f;
             checkpointIconCount = 0;
             checkpointIcon = MarkerType.ChevronUpx1;
+
+            return Task.FromResult(0);
+        }
+
+        private Task OnCheckpointPlacementCommit()
+        {
+            //TODO(bma): Store the checkpoint data somewhere.
+
+            OnCheckpointPlacementReset();
 
             creatorState.PlaceCheckpoint.Unset();
             return Task.FromResult(0);
