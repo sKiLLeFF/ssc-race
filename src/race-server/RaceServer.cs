@@ -1,12 +1,6 @@
-﻿using System;
-
-using CitizenFX.Core;
+﻿using CitizenFX.Core;
 
 using SSC.Shared.Wrappers;
-using SSC.Shared.Static;
-
-using static CitizenFX.Core.Native.API;
-using static SSC.Shared.Static.RaceStatic;
 
 namespace SSC.Server
 {
@@ -14,9 +8,6 @@ namespace SSC.Server
     {
         public static RaceServer Instance { get; private set; }
         public RaceEventCollection Events { get; private set; }
-
-        private RaceEvents raceEvents;
-        private ChatEvents chatEvents;
 
         //private readonly RaceCollection RaceCollection = new RaceCollection();
 
@@ -28,9 +19,8 @@ namespace SSC.Server
                 EventHandlers.Add, TriggerEvent, TriggerClientEvent
             );
 
-            chatEvents = new ChatEvents();
-            raceEvents = new RaceEvents();
-
+            new ChatEvents();
+            new RaceEvents();
         }
 
         //public void SaveTrack(string name, string json)

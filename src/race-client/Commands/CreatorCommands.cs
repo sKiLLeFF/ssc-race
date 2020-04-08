@@ -85,7 +85,6 @@ namespace SSC.Client.Commands
             }
 
             creator.PlaceCheckpoint.Set(true);
-            ChatHelper.SendMessage("Creator", $"Placed a new checkpoint", 0, 255, 0);
         }
 
         public void OnCommandFailed(string reason, string usage)

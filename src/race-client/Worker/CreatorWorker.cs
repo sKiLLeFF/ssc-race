@@ -20,7 +20,7 @@ namespace SSC.Client.Worker
 
         private uint checkpointState = 0;
         private uint checkpointMaxStates = 5;
-        private string[] checkpointStateNames = new string[] { "n.a.", "rotation", "size", "Icon", "offset", "commit" };
+        private string[] checkpointStateNames = new string[] { "n.a", "rotation", "size", "icon", "offset", "commit" };
         private MarkerType[] checkpointIcons = new MarkerType[] { MarkerType.ChevronUpx1, MarkerType.ChevronUpx2, MarkerType.ChevronUpx3, MarkerType.ReplayIcon };
 
         private Vector3 checkpointLastPosition = Vector3.Zero;
@@ -37,7 +37,10 @@ namespace SSC.Client.Worker
             creatorState = RSC.GetState<CreatorState>();
 
             creatorState.PlaceCheckpoint.Observe(
-                (state) => checkpointState = state == true ? 1u : 0u
+                (state) => {
+                    checkpointState = state == true ? 1u : 0u;
+                    OnCheckpointStateChange();
+                }
             );
 
             return Wait(100);
@@ -88,14 +91,22 @@ namespace SSC.Client.Worker
             if (IsControlJustPressed(0, 152))
             {
                 checkpointState = Mathman.Clamp(++checkpointState, 0, checkpointMaxStates);
-                ChatHelper.SendMessage("Creator", $"Editing checkpoint {checkpointStateNames[checkpointState]}", 0, 255, 0);
+                OnCheckpointStateChange();
             }
             //86 -> E, L3
             else if (IsControlJustPressed(0, 86))
             {
                 checkpointState = Mathman.Clamp(--checkpointState, 0, checkpointMaxStates);
-                ChatHelper.SendMessage("Creator", $"Editing checkpoint {checkpointStateNames[checkpointState]}", 0, 255, 0);
+                OnCheckpointStateChange();
             }
+        }
+
+        private void OnCheckpointStateChange()
+        {
+            if (checkpointState == 0 || checkpointState == checkpointMaxStates)
+                return;
+
+            ChatHelper.SendMessage("Creator", $"Editing checkpoint {checkpointStateNames[checkpointState]}", 0, 255, 0);
         }
 
         private Task OnCheckpointPlacementPreview()
