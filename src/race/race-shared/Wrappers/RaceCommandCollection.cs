@@ -74,6 +74,7 @@ namespace SSC.Shared.Wrappers
     {
         public string BaseCommand;
         public string SubCommand;
+        private string usageString;
 
         public Delegate OnCommandSuccess;
         public Delegate OnCommandFailed;
@@ -83,6 +84,7 @@ namespace SSC.Shared.Wrappers
         public RaceCommandDefinition()
         {
             Parameters = new Dictionary<string, RaceCommandParam>();
+            usageString = null;
         }
 
         public RaceCommandDefinition AddCommandName(string baseCmd, string subCmd)
@@ -129,6 +131,24 @@ namespace SSC.Shared.Wrappers
             return this;
         }
 
+        public string GetUsage()
+        {
+            if (string.IsNullOrEmpty(usageString))
+            {
+                StringBuilder usageBuilder = new StringBuilder();
+                usageBuilder.Append($"/{BaseCommand} {SubCommand}");
+
+                foreach (var paramKvp in Parameters)
+                {
+                    usageBuilder.Append($" <{paramKvp.Value.Name}>");
+                }
+
+                usageString = usageBuilder.ToString();
+            }
+
+            return usageString;
+        }
+
         public void InvokeSuccess(object[] invokeParams)
         {
             try
@@ -143,17 +163,7 @@ namespace SSC.Shared.Wrappers
 
         public void InvokeFailed(string reason)
         {
-            //TODO(bma): Cache the usage string.
-            StringBuilder usageBuilder = new StringBuilder();
-
-            usageBuilder.Append($"/{BaseCommand} {SubCommand}");
-
-            foreach (var paramKvp in Parameters)
-            {
-                usageBuilder.Append($" <{paramKvp.Value.Name}>");
-            }
-
-            OnCommandFailed.DynamicInvoke(new[] { reason, usageBuilder.ToString() });
+            OnCommandFailed.DynamicInvoke(new[] { reason, GetUsage() });
         }
     }
 
@@ -182,13 +192,17 @@ namespace SSC.Shared.Wrappers
 
         private void ProcessCommandInvoke(int source, List<object> args, string raw)
         {
+            if (string.IsNullOrEmpty(raw))
+            {
+                logger.Log("Invalid command? How did you even manage this?");
+                return;
+            }
+
             string baseCommand = raw.Split(' ')[0].Replace("/", "");
 
             if (args.Count < 1)
             {
-                //TODO(bma): Enumerate sub commands usage when the base command is invoked.
-                //           This might be a good time to add an function for command usage and caching this.
-                logger.LogToChat("CommandCollection","No sub command given, TODO(bma): Send usage for entire command (i.e. enumerate subcommands).", 255, 0, 0);
+                PrintCommandUsage(baseCommand);
                 return;
             }
 
@@ -258,5 +272,20 @@ namespace SSC.Shared.Wrappers
                 currentDefinition.InvokeSuccess(paramList.ToArray());
             }
         }
+
+        private void PrintCommandUsage(string baseCommand)
+        {
+            logger.LogToChat("CommandCollection", $"Possible commands for /{baseCommand} command:", 40, 200, 90);
+
+            foreach (RaceCommandDefinition definition in commandDefinitions)
+            {
+                if (string.Compare(definition.BaseCommand, baseCommand, true) == 0)
+                {
+                    logger.LogToChat("CommandCollection", $"  - {definition.GetUsage()}", 40, 200, 90);
+                }
+            }
+        }
+
     }
+
 }
