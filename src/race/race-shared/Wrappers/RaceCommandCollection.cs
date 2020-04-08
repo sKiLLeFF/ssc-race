@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SSC.Shared.Util;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,62 +12,61 @@ namespace SSC.Shared.Wrappers
     {
         public int Min;
         public int Max;
-        //Regex, but it's broken.
+        //TODO(bma): Fill out these checking arguements as new types get added.
     }
 
     public struct RaceCommandParam
     {
         public string Name;
         public Type Type;
+        public object Param;
+
         public RaceCommandCheckArgs CheckArgs;
+
+        public bool Error { get => !string.IsNullOrEmpty(CheckError); }
+        public string CheckError;
 
         public RaceCommandParam(string name, Type type, RaceCommandCheckArgs checkArgs)
         {
             Name = name;
             Type = type;
+            Param = null;
+
             CheckArgs = checkArgs;
+            CheckError = string.Empty;
         }
 
-        public bool IsParamValid(object theParam, out string reason)
+        public void ParseParam(object theParam)
         {
-            reason = "OK";
-
-            if (Type != theParam.GetType())
-            {
-
-                reason = $"Type mismatch, expected {Type.Name}, got {theParam.GetType().Name}";
-            }
-            else if (Type == typeof(string))
-            {
-                reason = CheckStringParam(theParam);
-            }
-
-            return reason == "OK";
+            if (Type == typeof(bool)) ParseBoolean(theParam);
+            else if (Type == typeof(string)) ParseString(theParam);
         }
 
-        public string CheckStringParam(object theParam)
+        private void ParseString(object theParam)
         {
-            string reason = "OK";
-            string paramString = Convert.ToString(theParam);
+            string parsedString = Convert.ToString(theParam);
 
             if (CheckArgs.Min > 0)
-            {
-                if (paramString.Length < CheckArgs.Min)
-                {
-                    reason = $"{Name} needs atleast {CheckArgs.Min} characters";
-                }
-            }
+                if (parsedString.Length < CheckArgs.Min)
+                    CheckError = $"{Name} needs atleast {CheckArgs.Min} characters";
 
             if (CheckArgs.Max > 0)
-            {
-                if (paramString.Length >= CheckArgs.Max)
-                {
-                    reason = $"{Name} cannot exceed {CheckArgs.Max} characters";
+                if (parsedString.Length >= CheckArgs.Max)
+                    CheckError = $"{Name} cannot exceed {CheckArgs.Max} characters";
 
-                }
-            }
+            Param = parsedString;
+        }
 
-            return reason;
+        private void ParseBoolean(object boolean)
+        {
+            string parsedString = Convert.ToString(boolean);
+
+            if (StringUtil.CompareMany(parsedString, true, "true", "1", "yes"))
+                Param = true;
+            else if (StringUtil.CompareMany(parsedString, true, "false", "0", "no"))
+                Param = false;
+            else
+                CheckError = $"The value {parsedString} is not a boolean value.";
         }
     }
 
@@ -159,11 +159,13 @@ namespace SSC.Shared.Wrappers
 
     public class RaceCommandCollection
     {
+        private Logger logger;
         private RaceCommandRegisterProxy registerProxy;
         private List<RaceCommandDefinition> commandDefinitions;
 
-        public RaceCommandCollection(RaceCommandRegisterProxy registerP)
+        public RaceCommandCollection(Logger logger, RaceCommandRegisterProxy registerP)
         {
+            this.logger = logger;
             commandDefinitions = new List<RaceCommandDefinition>();
 
             registerProxy = registerP;
@@ -180,13 +182,13 @@ namespace SSC.Shared.Wrappers
 
         private void ProcessCommandInvoke(int source, List<object> args, string raw)
         {
-
             string baseCommand = raw.Split(' ')[0].Replace("/", "");
 
             if (args.Count < 1)
             {
                 //TODO(bma): Enumerate sub commands usage when the base command is invoked.
                 //           This might be a good time to add an function for command usage and caching this.
+                logger.LogToChat("CommandCollection","No sub command given, TODO(bma): Send usage for entire command (i.e. enumerate subcommands).", 255, 0, 0);
                 return;
             }
 
@@ -205,11 +207,9 @@ namespace SSC.Shared.Wrappers
                 }
             }
 
-
             if (currentDefinition == null)
             {
-                //TODO(bma): Notify the user that something happened.
-                //           If this happens in general, it's really bad.
+                logger.LogToChat("CommandCollection", $"Command /{baseCommand} {subCommand} was not found", 255, 0, 0);
                 return;
             }
 
@@ -227,23 +227,29 @@ namespace SSC.Shared.Wrappers
             {
                 var paramName = paramKvp.Key;
                 var param = paramKvp.Value;
-                var arg = args[paramCounter];
+                object arg = args[paramCounter];
 
-                //Add player source.
+                //Exception to attach the player source and fill in the param..
                 if (string.Compare("player", param.Name) == 0)
                 {
                     paramList.Add(source);
                 }
-                else if (param.IsParamValid(arg, out string paramInvalidReason))
-                {
-                    paramList.Add(arg);
-                    paramCounter++;
-                }
                 else
                 {
-                    currentDefinition.InvokeFailed(paramInvalidReason);
-                    wasOneOfTheParamInvalid = true;
-                    break;
+                    param.ParseParam(arg);
+
+                    if (!param.Error)
+                    {
+                        paramList.Add(param.Param);
+                        paramCounter++;
+                    }
+                    else
+                    {
+                        logger.LogToChat("CommandCollection", $"Error?: {param.Error}, Reason: {param.CheckError}");
+                        currentDefinition.InvokeFailed(param.CheckError);
+                        wasOneOfTheParamInvalid = true;
+                        break;
+                    }
                 }
             }
 

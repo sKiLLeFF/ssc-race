@@ -8,6 +8,8 @@ using SSC.Client.States;
 using SSC.Client.Worker;
 
 using static CitizenFX.Core.Native.API;
+using SSC.Shared.Util;
+using SSC.Client.Util;
 
 namespace SSC.Client
 {
@@ -18,18 +20,25 @@ namespace SSC.Client
         public RaceCommandCollection Commands { get; private set; }
         public RaceStateCollection States { get; private set; }
         public RaceWorkerCollection Workers { get; private set; }
+        
+        public Logger Logger { get; private set; }
 
         public RaceClient()
         {
             Debug.WriteLine($"[{GetHashCode()}] Race Client has started");
             Instance = this;
 
+            Logger = new Logger(
+                (message) => Debug.WriteLine(message),
+                ChatHelper.SendMessage
+            );
+
             States = new RaceStateCollection();
             States.SetState(new CommonState());
             States.SetState(new CreatorState());
             States.SetState(new DevToolboxState());
 
-            Commands = new RaceCommandCollection(
+            Commands = new RaceCommandCollection(Logger,
                 (name, callback, restricted) => { RegisterCommand(name, callback, restricted); }
             );
 

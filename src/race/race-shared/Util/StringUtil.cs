@@ -31,5 +31,18 @@ namespace SSC.Shared.Util
 
             return eventNameBuilder.ToString();
         }
+
+        public static bool CompareMany(string input, bool ignoreCase, params string[] comparingTo)
+        {
+            foreach (string comparing in comparingTo)
+            {
+                if (string.Compare(input, comparing, ignoreCase) != 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }
