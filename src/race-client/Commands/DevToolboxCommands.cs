@@ -19,7 +19,7 @@ namespace SSC.Client.Commands
                 .AddCommandName("dvt", "car")
                 .AddSuccessCallback(new Action<string>(OnCarSpawn))
                 .AddFailedCallback(new Action<string, string>(OnCommandFailed))
-                .AddParam<string>("carModel", new RaceCommandCheckArgs { Min = 3, Max = 20 });
+                .AddParam<string>("vehicle_model", new RaceCommandCheckArgs { Min = 3, Max = 20 });
 
             RC.Commands.Register(dvtCar);
         }

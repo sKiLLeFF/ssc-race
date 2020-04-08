@@ -28,7 +28,7 @@ namespace SSC.Client.Commands
                 .AddSuccessCallback(new Action<string, bool>(OnCreatorOption))
                 .AddFailedCallback(new Action<string, string>(OnCommandFailed))
                 .AddParam<string>("option", new RaceCommandCheckArgs())
-                .AddParam<bool>("optionToggle", new RaceCommandCheckArgs());
+                .AddParam<bool>("option_value", new RaceCommandCheckArgs());
 
             RC.Commands.Register(cmdCreatorStart);
             RC.Commands.Register(cmdCreatorCheckpoint);
