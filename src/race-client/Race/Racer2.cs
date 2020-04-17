@@ -1,6 +1,6 @@
 ﻿namespace SSC.Client.Race
 {
-    public class Racer
+    public class Racer2
     {
         public int RacerServerId = -1;
 
@@ -12,7 +12,7 @@
             }
         }
 
-        public Racer(int serverId)
+        public Racer2(int serverId)
         {
             RacerServerId = serverId;
         }

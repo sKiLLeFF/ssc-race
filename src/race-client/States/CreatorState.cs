@@ -1,4 +1,5 @@
-﻿using SSC.Shared.Util;
+﻿using SSC.Client.Data;
+using SSC.Shared.Util;
 
 namespace SSC.Client.States
 {
@@ -9,5 +10,6 @@ namespace SSC.Client.States
         public bool ZFix = true;
         public bool OptionPreview = true;
 
+        public RaceCheckpoint PreviewCheckpoint = new RaceCheckpoint();
     }
 }

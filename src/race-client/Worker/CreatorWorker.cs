@@ -10,6 +10,7 @@ using SSC.Client.States;
 using SSC.Client.Util;
 
 using static CitizenFX.Core.Native.API;
+using SSC.Client.Data;
 
 namespace SSC.Client.Worker
 {
@@ -26,7 +27,7 @@ namespace SSC.Client.Worker
         private Vector3 checkpointLastPosition = Vector3.Zero;
         private Vector3 checkpointOffset = Vector3.Zero;
         private float checkpointRotation = 0.0f;
-        private float checkpointSize = 1.0f;
+        private float checkpointSize = 5.0f;
         private int checkpointIconCount = 0;
         private MarkerType checkpointIcon = MarkerType.ChevronUpx1;
 
@@ -145,28 +146,17 @@ namespace SSC.Client.Worker
 
         private void RenderCheckpoint()
         {
-            //Draw the circle marker.
-            World.DrawMarker(
-                 MarkerType.VerticalCylinder,
-                 checkpointLastPosition + checkpointOffset,
-                 Vector3.Up, Vector3.Zero, Vector3.One * (5.0f * checkpointSize),
-                 Color.FromArgb(80, 120, 170, 255),
-                 false,false, false,
-                 null, null, false
-             );
-
-            //Draw the inner marker.
             float innerMarkerSize = 3.0f;
-            World.DrawMarker(
-                checkpointIcon,
-                (checkpointLastPosition + checkpointOffset) + Vector3.ForwardLH * innerMarkerSize,
-                Vector3.Zero,
-                new Vector3(checkpointRotation, 90.0f, 180.0f), 
-                Vector3.One * innerMarkerSize,
-                Color.FromArgb(100, 50, 130, 255),
-                false, false, false,
-                null, null, false
-            );
+
+            RaceCheckpoint rcp = creatorState.PreviewCheckpoint;
+            rcp.SetPosition(checkpointLastPosition + checkpointOffset);
+            rcp.SetRotation(new Vector3(checkpointRotation, 90.0f, 180.0f));
+            rcp.SetCheckpointSize(checkpointSize);
+            rcp.SetCheckpointIcon(checkpointIcon);
+            rcp.SetCheckpointIconSize(innerMarkerSize);
+            rcp.SetCheckpointIconHeight(innerMarkerSize);
+
+            rcp.OnDraw();
         }
 
         private Task OnCheckpointPlacementRotation()
@@ -188,11 +178,11 @@ namespace SSC.Client.Worker
         {
             if (IsControlJustPressed(0, 172))
             {
-                checkpointSize += 0.25f;
+                checkpointSize += 0.5f;
             }
             else if (IsControlJustPressed(0, 173))
             {
-                checkpointSize -= 0.25f;
+                checkpointSize -= 0.5f;
             }
 
             checkpointSize = Mathman.Clamp(checkpointSize, 1.0f, 20.0f);

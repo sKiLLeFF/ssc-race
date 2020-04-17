@@ -7,16 +7,11 @@ using SSC.Shared.Wrappers;
 using SSC.Client.States;
 
 using static CitizenFX.Core.Native.API;
-using System.Text;
 
 namespace SSC.Client.Worker
 {
     public class CommonWorker : RaceWorker
     {
-        public CommonWorker()
-        {
-            
-        }
         public override Task OnGameLogicTick()
         {
             CommonState common = RaceClient.Instance.States.GetState<CommonState>();

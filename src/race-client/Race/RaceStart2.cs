@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace SSC.Client.Race
 {
-    public class RaceStart
+    public class RaceStart2
     {
         public Vector3 Position;
         public float Heading;
 
-        public RaceStart(Vector3 p, float heading)
+        public RaceStart2(Vector3 p, float heading)
         {
             Position = p;
             Heading = heading;

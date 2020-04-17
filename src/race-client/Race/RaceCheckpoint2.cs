@@ -7,13 +7,13 @@ using SSC.Client.Util;
 
 namespace SSC.Client.Race
 {
-    public class RaceCheckpoint
+    public class RaceCheckpoint2
     {
         public Vector3 Position;
 
         private Vector3 GroundPosition = Vector3.Zero;
 
-        public RaceCheckpoint(Vector3 p)
+        public RaceCheckpoint2(Vector3 p)
         {
             Position = p;
         }

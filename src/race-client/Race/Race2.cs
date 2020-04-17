@@ -15,17 +15,17 @@ namespace SSC.Client.Race
         Closed
     }
 
-    public class Race
+    public class Race2
     {
         private string RaceName = "Unknown";
 
-        private List<RaceStart> StartingPoints = new List<RaceStart>();
-        private List<RaceCheckpoint> Checkpoints = new List<RaceCheckpoint>();
-        private List<Racer> Racers = new List<Racer>();
+        private List<RaceStart2> StartingPoints = new List<RaceStart2>();
+        private List<RaceCheckpoint2> Checkpoints = new List<RaceCheckpoint2>();
+        private List<Racer2> Racers = new List<Racer2>();
 
         private bool Debug = false;
 
-        public Race(string name, bool debug)
+        public Race2(string name, bool debug)
         {
             RaceName = name;
             Debug = debug;
@@ -33,14 +33,14 @@ namespace SSC.Client.Race
 
         public async Task CreatorUpdate()
         {
-            foreach (RaceCheckpoint checkpoint in Checkpoints)
+            foreach (RaceCheckpoint2 checkpoint in Checkpoints)
             {
                 await checkpoint.Render();
             }
 
             if (Debug)
             {
-                foreach (RaceStart start in StartingPoints)
+                foreach (RaceStart2 start in StartingPoints)
                 {
                     start.Render();
                 }
@@ -66,12 +66,12 @@ namespace SSC.Client.Race
             BaseScript.TriggerServerEvent("ssrc.race::savetrack", RaceName, JsonConvert.SerializeObject(trackDataObject));
         }
 
-        public void AddCheckpoint(RaceCheckpoint cp)
+        public void AddCheckpoint(RaceCheckpoint2 cp)
         {
             Checkpoints.Add(cp);
         }
 
-        public void AddStart(RaceStart start)
+        public void AddStart(RaceStart2 start)
         {
             StartingPoints.Add(start);
         }
